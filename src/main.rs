@@ -27,19 +27,16 @@ fn main() -> ! {
     let mut chase_pos = 0;
 
     loop {
-        for i in (0..FRAMEBUFFER_SIZE).step_by(3) {
-            if i % 64 == chase_pos {
-                framebuffer.buffer[i] = 16;
-                framebuffer.buffer[i+1] = 0;
-                framebuffer.buffer[i+2] = 0;
-            } else {
-                framebuffer.buffer[i] = 0;
-                framebuffer.buffer[i+1] = 0;
-                framebuffer.buffer[i+2] = 0;
-            }
+        for i in 0..FRAMEBUFFER_SIZE {
+            let color = ((i + chase_pos/2) % 48) as u8;
+            framebuffer.set_pixel(i,
+                if color < 16 { color } else if color >= 32 { 0 } else { 32-color },
+                if color < 16 { 0 } else if color >= 32 { 48-color } else { color-16 },
+                if color < 16 { 16-color } else if color >= 32 { color-32 } else { 0 },
+            );
         }
 
-        chase_pos = (chase_pos + 1) % 64;
+        chase_pos = (chase_pos + 1) % 96;
         framebuffer.dump();
     }
 }
