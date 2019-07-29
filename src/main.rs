@@ -20,10 +20,7 @@ fn main() -> ! {
     let mut rcc = dp.RCC.constrain();
     let _ = rcc.cfgr.use_hse(8.mhz()).sysclk(24.mhz()).freeze(&mut flash.acr);
 
-    let mut gpioc = dp.GPIOC.split(&mut rcc.apb2);
-    let _ = gpioc.pc13.into_push_pull_output(&mut gpioc.crh);
-
-    let mut framebuffer = Framebuffer::new();
+    let mut framebuffer = Framebuffer::new(&mut rcc.apb2, dp.GPIOC);
     let mut chase_pos = 0;
 
     loop {

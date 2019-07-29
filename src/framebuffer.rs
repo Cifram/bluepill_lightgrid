@@ -1,4 +1,9 @@
 use core::ptr;
+use stm32f1xx_hal::{
+    prelude::*,
+    rcc::APB2,
+    stm32::GPIOC
+};
 
 const GPIOC_ODR: u32 = 0x4001100C;
 pub const FRAMEBUFFER_SIZE: usize = 144;
@@ -25,7 +30,10 @@ pub struct Framebuffer {
 }
 
 impl Framebuffer {
-    pub fn new() -> Framebuffer {
+    pub fn new(apb2: &mut APB2, gpioc: GPIOC) -> Framebuffer {
+        let mut gpioc = gpioc.split(apb2);
+        let _ = gpioc.pc13.into_push_pull_output(&mut gpioc.crh);
+
         Framebuffer { buffer: [0; FRAMEBUFFER_SIZE*3] }
     }
 
