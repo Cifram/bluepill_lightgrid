@@ -3,31 +3,14 @@
 
 extern crate panic_itm;
 
+mod framebuffer;
+
 use stm32f1xx_hal::{
     prelude::*,
     pac,
 };
-use core::ptr;
 use cortex_m_rt::entry;
-
-const GPIOC_ODR: u32 = 0x4001100C;
-
-macro_rules! ws2812_byte {
-    ($byte:ident) => {
-        for _ in 0..8 {
-            let bit = (($byte as u32) & 0b1000_0000) >> 7;
-            unsafe { ptr::write_volatile(GPIOC_ODR as *mut u32, 1 << 13); }
-            cortex_m::asm::nop();
-            unsafe { ptr::write_volatile(GPIOC_ODR as *mut u32, bit << 13); }
-            cortex_m::asm::nop();
-            cortex_m::asm::nop();
-            unsafe { ptr::write_volatile(GPIOC_ODR as *mut u32, 0); }
-            cortex_m::asm::nop();
-            cortex_m::asm::nop();
-            $byte = $byte << 1;
-        }
-    };
-}
+use framebuffer::{ Framebuffer, FRAMEBUFFER_SIZE };
 
 #[entry]
 fn main() -> ! {
@@ -40,18 +23,23 @@ fn main() -> ! {
     let mut gpioc = dp.GPIOC.split(&mut rcc.apb2);
     let _ = gpioc.pc13.into_push_pull_output(&mut gpioc.crh);
 
+    let mut framebuffer = Framebuffer::new();
+    let mut chase_pos = 0;
+
     loop {
-        for _ in 0..144 {
-            let mut byte1: u8 = 16;
-            let mut byte2: u8 = 0;
-            let mut byte3: u8 = 0;
-            ws2812_byte!(byte1);
-            ws2812_byte!(byte2);
-            ws2812_byte!(byte3);
+        for i in (0..FRAMEBUFFER_SIZE).step_by(3) {
+            if i % 64 == chase_pos {
+                framebuffer.buffer[i] = 16;
+                framebuffer.buffer[i+1] = 0;
+                framebuffer.buffer[i+2] = 0;
+            } else {
+                framebuffer.buffer[i] = 0;
+                framebuffer.buffer[i+1] = 0;
+                framebuffer.buffer[i+2] = 0;
+            }
         }
 
-        for _ in 0..200 {
-            cortex_m::asm::nop();
-        }
+        chase_pos = (chase_pos + 1) % 64;
+        framebuffer.dump();
     }
 }
