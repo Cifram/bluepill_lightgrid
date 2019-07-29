@@ -6,10 +6,10 @@ pub const FRAMEBUFFER_SIZE: usize = 144;
 macro_rules! ws2812_byte {
     ($byte:ident) => {
         for _ in 0..8 {
-            let bit = (($byte as u32) & 0b1000_0000) >> 7;
+            let bit = (($byte as u32) & 0b1000_0000) << 6;
             unsafe { ptr::write_volatile(GPIOC_ODR as *mut u32, 1 << 13); }
             cortex_m::asm::nop();
-            unsafe { ptr::write_volatile(GPIOC_ODR as *mut u32, bit << 13); }
+            unsafe { ptr::write_volatile(GPIOC_ODR as *mut u32, bit); }
             cortex_m::asm::nop();
             cortex_m::asm::nop();
             unsafe { ptr::write_volatile(GPIOC_ODR as *mut u32, 0); }
