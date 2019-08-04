@@ -4,6 +4,8 @@
 extern crate panic_itm;
 
 mod framebuffer;
+mod pattern;
+mod rainbow_pattern;
 
 use nb::block;
 use stm32f1xx_hal::{
@@ -13,6 +15,8 @@ use stm32f1xx_hal::{
 };
 use cortex_m_rt::entry;
 use framebuffer::{ Framebuffer, FRAMEBUFFER_SIZE };
+use pattern::Pattern;
+use rainbow_pattern::RainbowPattern;
 
 #[entry]
 fn main() -> ! {
@@ -25,19 +29,20 @@ fn main() -> ! {
     let mut timer = Timer::syst(cp.SYST, 30.hz(), clocks);
 
     let mut framebuffer = Framebuffer::new(&mut rcc.apb2, dp.GPIOB);
-    let mut chase_pos = 0;
+    let mut frame = 0;
+    let mut pattern = RainbowPattern::new();
 
     loop {
+        pattern.update();
+
         for i in 0..FRAMEBUFFER_SIZE {
-            let color = ((i + chase_pos) % 48) as u8;
-            framebuffer.set_pixel(i,
-                if color < 16 { color } else if color >= 32 { 0 } else { 32-color },
-                if color < 16 { 0 } else if color >= 32 { 48-color } else { color-16 },
-                if color < 16 { 16-color } else if color >= 32 { color-32 } else { 0 },
-            );
+            let x = i / 16;
+            let y = if x % 2 == 0 { i % 16 } else { 16 - (i % 16) };
+            let (r, g, b) = pattern.get_pixel(x, y, frame);
+            framebuffer.set_pixel(i, r, g, b);
         }
 
-        chase_pos = (chase_pos + 2) % 48;
+        frame = frame + 1;
         framebuffer.dump();
 
         block!(timer.wait()).unwrap();
