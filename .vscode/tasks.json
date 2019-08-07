@@ -17,6 +17,18 @@
             "problemMatcher": []
         },
         {
+            //  Connect to the Blue Pill via OpenOCD, to be used for debugging.
+            "label": "🔗 Connect To CS32 Blue Pill",
+            "type": "shell",
+            "windows": {
+                "command": "c:\\openocd\\bin\\openocd -f interface/stlink.cfg -f target/cs32f1x.cfg",
+            },
+            "linux": {
+                "command": "openocd -f interface/stlink.cfg -f target/cs32f1x.cfg",
+            },
+            "problemMatcher": []
+        },
+        {
             //  Build the Rust main program. This is the default task for "Run Build Task".
             //  The compiled main program will be located at "stm32-blue-pill-rust/target/thumbv7m-none-eabi/release/stm32-blue-pill-rust"
             "label": "🔨 Build (STM32 Blue Pill Rust)",
