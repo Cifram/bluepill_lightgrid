@@ -28,7 +28,7 @@ fn main() -> ! {
     let clocks = rcc.cfgr.use_hse(8.mhz()).sysclk(24.mhz()).freeze(&mut flash.acr);
     let mut timer = Timer::syst(cp.SYST, 30.hz(), clocks);
 
-    let mut framebuffer = Framebuffer::new(&mut rcc.apb2, dp.GPIOB);
+    let mut framebuffer = Framebuffer::new(&mut rcc.apb2, dp.GPIOA);
     let mut frame = 0;
     let mut pattern = RainbowPattern::new();
 
