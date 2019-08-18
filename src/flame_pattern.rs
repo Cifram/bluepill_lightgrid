@@ -1,4 +1,4 @@
-use crate::pattern::Pattern;
+use crate::pattern::StatelessPattern;
 
 pub struct FlamePattern {}
 
@@ -28,10 +28,8 @@ const ANIMATION: [[(u8, u8, u8); 16]; FRAME_COUNT] = [
 ];
 const RANDOMIZER: [usize; 16] = [ 14, 6, 9, 5, 3, 7, 15, 11, 10, 12, 4, 13, 1, 2, 8, 0 ];
 
-impl Pattern for FlamePattern {
-    fn update(&mut self) {}
-
-    fn get_pixel(&self, x: usize, y: usize, frame: u32) -> (u8, u8, u8) {
-        ANIMATION[((frame as usize)+RANDOMIZER[x%16])%FRAME_COUNT][y]
+impl StatelessPattern for FlamePattern {
+    fn get_pixel(x: usize, y: usize, frame: u32) -> (u8, u8, u8) {
+        ANIMATION[((frame as usize) + RANDOMIZER[x % 16]) % FRAME_COUNT][15 - y]
     }
 }

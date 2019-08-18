@@ -7,22 +7,24 @@ use stm32f1xx_hal::{
     },
 };
 
-pub const FRAMEBUFFER_SIZE: usize = 768;
-
-const PIN1_START: usize = (FRAMEBUFFER_SIZE*3)/3;
-const PIN2_START: usize = PIN1_START*2;
-
 const PIN1: u32 = 0;
 const PIN2: u32 = 1;
 const PIN3: u32 = 2;
 const ALL_PINS_ON: u32 = (1 << PIN1) + (1 << PIN2) + (1 << PIN3);
 
 pub struct Framebuffer {
-    pub buffer: [u8; FRAMEBUFFER_SIZE*3],
+    pub buffer: [u8; Framebuffer::size()*3],
     registers: &'static RegisterBlock,
 }
 
 impl Framebuffer {
+    pub const fn width() -> usize { 48 }
+    pub const fn height() -> usize { 16 }
+    pub const fn size() -> usize { Framebuffer::width() * Framebuffer::height() }
+
+    const fn pin1_start() -> usize { Framebuffer::size() }
+    const fn pin2_start() -> usize { Framebuffer::pin1_start()*2 }
+
     pub fn new(apb2: &mut APB2, gpioa: GPIOA) -> Framebuffer {
         let mut gpioa = gpioa.split(apb2);
         let _ = gpioa.pa0.into_push_pull_output(&mut gpioa.crl);
@@ -43,7 +45,7 @@ impl Framebuffer {
         let _ = gpioa.pa15.into_push_pull_output(&mut gpioa.crh);
 
         Framebuffer {
-            buffer: [0; FRAMEBUFFER_SIZE*3],
+            buffer: [0; Framebuffer::size()*3],
             registers: unsafe { &*GPIOA::ptr() },
         }
     }
@@ -55,10 +57,10 @@ impl Framebuffer {
     }
 
     pub fn dump(&self) {
-        for i in 0..PIN1_START {
+        for i in 0..Framebuffer::pin1_start() {
             let mut byte1 = self.buffer[i];
-            let mut byte2 = self.buffer[i + PIN1_START];
-            let mut byte3 = self.buffer[i + PIN2_START];
+            let mut byte2 = self.buffer[i + Framebuffer::pin1_start()];
+            let mut byte3 = self.buffer[i + Framebuffer::pin2_start()];
             for _ in 0..8 {
                 let bits =
                     (((byte1 as u32) & 0b1000_0000) >> 7 << PIN1) +

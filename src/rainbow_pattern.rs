@@ -1,4 +1,4 @@
-use crate::pattern::Pattern;
+use crate::pattern::StatelessPattern;
 
 pub struct RainbowPattern {}
 
@@ -27,10 +27,8 @@ const DIMMER_TABLE: [[u8; 16]; 16] = [
     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
 ];
 
-impl Pattern for RainbowPattern {
-    fn update(&mut self) {}
-
-    fn get_pixel(&self, x: usize, y: usize, frame: u32) -> (u8, u8, u8) {
+impl StatelessPattern for RainbowPattern {
+    fn get_pixel(x: usize, y: usize, frame: u32) -> (u8, u8, u8) {
         let cast_frame = frame as usize;
         let brightness_progression = x-y - cast_frame+100;
         let brightness_gradient = brightness_progression % 16;
